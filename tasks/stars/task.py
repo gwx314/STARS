@@ -521,7 +521,8 @@ class StarsTask(BaseTask):
     def add_phone_ctc_loss(self, ph_frame_logits, ph, input_lengths, target_length, losses):
         if self.global_step >= hparams.get('ph_start', 0):
             ph_frame_logits = ph_frame_logits.permute(1, 0, 2)
-            ph_ctc_loss = torch.nn.functional.ctc_loss(ph_frame_logits, ph, input_lengths, target_length)
+            ph_log_probs = torch.nn.functional.log_softmax(ph_frame_logits, dim=-1)
+            ph_ctc_loss = torch.nn.functional.ctc_loss(ph_log_probs, ph, input_lengths, target_length)
             losses['ph_ctc_loss'] = ph_ctc_loss * hparams.get('lambda_ph_ctc', 1.0)
         else:
             losses['ph_ctc_loss'] = 0.
